@@ -1,5 +1,5 @@
 <template>
-  <Stopwatch />
+  <Stopwatch :state="timerState" />
 </template>
 
 <script>
@@ -12,8 +12,11 @@
       Stopwatch
     },
 
-    data: () => ({
-      //
-    })
+    data: () => {
+      return {
+        timerState: "stopped",
+        ticker: undefined
+      };
+    }
   };
 </script>

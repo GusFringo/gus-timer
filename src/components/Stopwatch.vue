@@ -1,7 +1,7 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <div id="clock">
-      <span class="time">{{ time }}</span>
+      <v-flex class="time">{{ time }}</v-flex>
 
       <div class="btn-container">
         <a id="start" @click="run">Start</a>
@@ -65,7 +65,7 @@
     .time {
       font-size: 6.5em;
       text-align: center;
-      margin-left: 200px;
+      margin: 0 auto;
     }
 
     .text {
