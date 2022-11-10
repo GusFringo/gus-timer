@@ -1,8 +1,9 @@
 <template>
   <v-container fluid>
     <Scramble ref="Scramble"></Scramble>
-    <div id="clock">
-      <v-flex class="time">{{ time }}</v-flex>
+    <div id="timeOut" class="time">
+      <span id="min"></span><span id="colon"></span
+      ><span id="sec">0</span>.<span id="decimal">00</span>
     </div>
     <Stats ref="Stats" />
   </v-container>
@@ -15,80 +16,83 @@ export default {
   data() {
     return {
       time: "00:00.000",
-      timeBegan: null,
-      timeStopped: null,
-      stoppedDuration: 0,
-      started: null,
       running: false,
+      interval: "",
+      decimal: 0,
+      sec: 0,
+      min: 0,
+      cs: 0,
+      decimalOut: document.getElementById("decimal"),
+      secOut: document.getElementById("sec"),
+      minOut: document.getElementById("min"),
+      colon: document.getElementById("colon"),
+      timesOut: document.getElementById("timeOut"),
+      timesList: document.getElementById("timeList"),
+      clearAll: document.getElementById("clear"),
+      timesDisplay: new Array(),
+      csTimes: new Array(),
+      avAll: 0,
+      avAllOut: document.getElementById("overallAv"),
+      best: 999999999999999999,
+      bestOut: document.getElementById("fastest"),
+      worst: 0,
+      numSolves: 0,
+      total: 0,
+      numSolvesOut: document.getElementById("solveNum"),
     };
   },
   name: "stopwatch",
 
   computed: {},
   methods: {
-    startStop() {
-      if (!this.running) {
-        this.run();
-      } else if (this.running) {
-        this.stop();
+    timer() {
+      this.decimal++;
+      this.cs++; //counts time in centiseconds
+      this.decimalOut = this.decimal;
+      if (this.decimal >= 100) {
+        this.decimal = 0;
+        this.sec++;
+
+        if (this.sec > 59) {
+          this.sec = 0;
+          this.min++;
+          this.colon = ":";
+          this.minOut = this.min;
+        }
+        if (this.sec <= 9 && this.min > 0) {
+          this.sec = "0" + this.sec;
+        }
+        this.secOut = this.sec;
+      }
+
+      if (this.decimal <= 9) {
+        this.decimal = "0" + this.decimal;
+        this.decimalOut = this.decimal;
       }
     },
 
     run() {
-      this.reset();
-      if (this.running) return;
-
-      if (this.timeBegan === null) {
-        this.reset();
-        this.timeBegan = new Date();
+      if (!this.running) {
+        this.decimal = 0;
+        this.sec = 0;
+        this.min = 0;
+        this.cs = 0;
+        this.secOut = "0";
+        this.minOut = "";
+        this.colon = "";
+        this.running = true;
+        this.scramble = "";
+        this.newScramble();
+        this.interval = setInterval(this.timer, 10);
+      } else if (this.running) {
+        this.running = false;
+        clearInterval(this.interval);
+        this.timesDisplay.push(" " + this.timesOut);
+        this.csTimes.push(this.cs);
+        this.timesList = this.timesDisplay;
+        this.stats();
       }
-
-      if (this.timeStopped !== null) {
-        this.stoppedDuration += new Date() - this.timeStopped;
-      }
-
-      this.started = setInterval(this.clockRunning, 10);
-      this.running = true;
     },
-    stop() {
-      this.running = false;
-      this.timeStopped = new Date();
-      clearInterval(this.started);
-      this.newScramble();
-      this.stats();
-    },
-    reset() {
-      this.running = false;
-      clearInterval(this.started);
-      this.stoppedDuration = 0;
-      this.timeBegan = null;
-      this.timeStopped = null;
-      this.time = "00:00.000";
-    },
-    clockRunning() {
-      var currentTime = new Date(),
-        timeElapsed = new Date(
-          currentTime - this.timeBegan - this.stoppedDuration
-        ),
-        min = timeElapsed.getUTCMinutes(),
-        sec = timeElapsed.getUTCSeconds(),
-        ms = timeElapsed.getUTCMilliseconds();
-
-      this.time =
-        this.zeroPrefix(min, 2) +
-        ":" +
-        this.zeroPrefix(sec, 2) +
-        "." +
-        this.zeroPrefix(ms, 3);
-    },
-    zeroPrefix(num, digit) {
-      var zero = "";
-      for (var i = 0; i < digit; i++) {
-        zero += "0";
-      }
-      return (zero + num).slice(-digit);
-    },
-
     newScramble() {
       this.$refs.Scramble.generateScramble();
     },
@@ -106,7 +110,7 @@ export default {
       var key = e.key;
       // var timing = this.running === false;
       if (key === " ") {
-        this.startStop();
+        this.run();
       }
     });
   },
